@@ -19,7 +19,7 @@ typedef enum
     UMH_REQUEST_ERROR        = 1,    /**< Function call cannot be honored */
     UMH_CHANNEL_ERROR        = 2,    /**< Invalid sequencer argument */
     UMH_PARAMETER_ERROR      = 3,    /**< Arguments are invalid */
-    UMH_BUFFER_ERROR         = 4,    /**< Communication failure */
+    UMH_BUFFER_ERROR         = 4,    /**< Buffer Size is not sufficent */
     UMH_DELAYED              = 5,    /**< Request accepted but delayed */
     UMH_DATA_INVALID         = 6,    /**< Data area not valid */
     UMH_DATA_ERROR           = 7,    /**< Data area not valid */
@@ -28,18 +28,21 @@ typedef enum
 } UART_MSG_HANDLER_eReturnCode;
 
 /* Exported constants --------------------------------------------------------*/
-#define UMH_RX_BUFFER_SIZE  256
-#define UMH_TX_BUFFER_SIZE  256
+#define UMH_RX_BUFFER_SIZE  (256)
+#define UMH_TX_BUFFER_SIZE  (256)
+#define UMH_FRAME_SIZE      (3) // Start byte, data, checksum
+#define UMH_MAX_DATA_SIZE   ((UMH_TX_BUFFER_SIZE >> 1) - UMH_FRAME_SIZE) // Space for escaping data
+
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
-extern uint8_t *umh_rx_buffer;
-extern uint8_t *umh_tx_buffer;
+extern uint8_t *umh_rx_read_ptr;
+extern uint8_t *umh_tx_ptr;
 
 /* Exported functions --------------------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_init();
+UART_MSG_HANDLER_eReturnCode umh_send_buffer(uint8_t *buffer, uint32_t length);
 
+void umh_ISR(uint16_t size);
 
 #endif  /* UART_MSG_HANDLER_H */
-
-
