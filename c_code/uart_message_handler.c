@@ -57,19 +57,42 @@ UART_MSG_HANDLER_eReturnCode umh_init()
 }
 
 /**
+ * @brief Get the current read pointer
+ * 
+ * @param ptr - Pointer to hold the adresse of the current read pointer
+ * @return UART_MSG_HANDLER_eReturnCode 
+ */
+UART_MSG_HANDLER_eReturnCode umh_get_rx_ptr(uint8_t **ptr)
+{
+    *ptr = umh_rx_read_ptr;
+    return UMH_RET_OK;
+}
+
+/**
  * @brief Copy the data from the read buffer to a given buffer
  * 
  * @param buffer - Pointer to the buffer to copy to
  * @param length - Length of the data to copy (in bytes, max UMH_RX_BUFFER_SIZE)
  * @return UART_MSG_HANDLER_eReturnCode 
  */
-UART_MSG_HANDLER_eReturnCode umh_get_buffer(uint8_t *buffer, uint32_t length)
+UART_MSG_HANDLER_eReturnCode umh_get_rx_buffer(uint8_t *buffer, uint32_t *length)
 {
     if (length > UMH_RX_BUFFER_SIZE)
     {
         return UMH_PARAMETER_ERROR;
     }
     memcpy(buffer, umh_rx_read_ptr, length);
+    return UMH_RET_OK;
+}
+
+/**
+ * @brief Clear the read buffer
+ * 
+ * @return UART_MSG_HANDLER_eReturnCode 
+ */
+UART_MSG_HANDLER_eReturnCode umh_clear_rx_read_buffer()
+{
+    memset(umh_rx_read_ptr, 0, UMH_RX_BUFFER_SIZE);
     return UMH_RET_OK;
 }
 
@@ -105,12 +128,40 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t leng
         return UMH_PARAMETER_ERROR;
     }
     // align data msb first
-    for (uint16_t i = 0; i < length; i++)
+    for (uint32_t i = 0; i < length; i++)
     {
         umh_tx_buffer[i * 2] = (buffer[i] >> 8) & 0xFF;
         umh_tx_buffer[i * 2 + 1] = buffer[i] & 0xFF;
     }
+    umh_transmit_data(umh_tx_buffer, length * 2);
+    return UMH_RET_OK;
+}
 
+/**
+ * @brief Send a buffer of uint32_t data with MSB first alignment
+ * 
+ * @param buffer - Pointer to the buffer to send
+ * @param length - Length of the data to send (in longs, max UMH_MAX_DATA_SIZE / 4)
+ * @return UART_MSG_HANDLER_eReturnCode 
+ */
+UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t length)
+{
+    // check if the length is too large
+    if (length > UMH_MAX_DATA_SIZE / 4)
+    {
+        return UMH_PARAMETER_ERROR;
+    }
+    // align data msb first
+    for (uint32_t i = 0; i < length; i++)
+    {
+        umh_tx_buffer[i * 2]     = (buffer[i] >> 24) & 0xFF;
+        umh_tx_buffer[i * 2 + 1] = (buffer[i] >> 16) & 0xFF;
+        umh_tx_buffer[i * 2 + 2] = (buffer[i] >> 8)  & 0xFF;
+        umh_tx_buffer[i * 2 + 3] = buffer[i] & 0xFF;
+    }
+    umh_transmit_data(umh_tx_buffer, length * 4);
+    return UMH_RET_OK;
+}    
 }
 
 /**

@@ -41,7 +41,12 @@ extern uint8_t *umh_tx_ptr;
 
 /* Exported functions --------------------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_init();
+UART_MSG_HANDLER_eReturnCode umh_get_rx_ptr(uint8_t **ptr);
+UART_MSG_HANDLER_eReturnCode umh_get_rx_buffer(uint8_t *buffer, uint32_t length);
+UART_MSG_HANDLER_eReturnCode umh_clear_rx_read_buffer();
 UART_MSG_HANDLER_eReturnCode umh_send_buffer(uint8_t *buffer, uint32_t length);
+UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t length);
+UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t length);
 
 void umh_ISR(uint16_t size);
 
