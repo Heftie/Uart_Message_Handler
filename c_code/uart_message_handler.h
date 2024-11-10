@@ -12,6 +12,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stdint.h"
 #include "stdlib.h"
+#include "string.h"
+
 /* Exported types ------------------------------------------------------------*/
 typedef enum
 {
@@ -47,6 +49,7 @@ UART_MSG_HANDLER_eReturnCode umh_clear_rx_read_buffer();
 UART_MSG_HANDLER_eReturnCode umh_send_buffer(uint8_t *buffer, uint32_t length);
 UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t length);
 UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t length);
+UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length);
 
 void umh_ISR(uint16_t size);
 

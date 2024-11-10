@@ -75,7 +75,7 @@ UART_MSG_HANDLER_eReturnCode umh_get_rx_ptr(uint8_t **ptr)
  * @param length - Length of the data to copy (in bytes, max UMH_RX_BUFFER_SIZE)
  * @return UART_MSG_HANDLER_eReturnCode 
  */
-UART_MSG_HANDLER_eReturnCode umh_get_rx_buffer(uint8_t *buffer, uint32_t *length)
+UART_MSG_HANDLER_eReturnCode umh_get_rx_buffer(uint8_t *buffer, uint32_t length)
 {
     if (length > UMH_RX_BUFFER_SIZE)
     {
@@ -162,7 +162,6 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t leng
     umh_transmit_data(umh_tx_buffer, length * 4);
     return UMH_RET_OK;
 }    
-}
 
 /**
  * @brief ISR function to be called when the UART received a complete message
