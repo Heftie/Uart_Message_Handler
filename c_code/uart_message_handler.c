@@ -30,8 +30,8 @@ uint8_t umh_tx_ready_flag = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer);
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length, uint8_t *tx_buffer, uint32_t *tx_length)
-{
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length, uint8_t *tx_buffer, uint32_t *tx_length);
+
 UART_MSG_HANDLER_eReturnCode umh_swap_rx_buffer();
 
 /* Exported functions --------------------------------------------------------*/
