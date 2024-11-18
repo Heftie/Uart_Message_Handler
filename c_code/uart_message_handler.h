@@ -40,6 +40,7 @@ typedef enum
 /* Exported variables --------------------------------------------------------*/
 extern uint8_t *umh_rx_read_ptr;
 extern uint8_t *umh_tx_ptr;
+extern uint8_t umh_rx_received_flag;
 
 /* Exported functions --------------------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_init();
