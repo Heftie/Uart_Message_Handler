@@ -30,7 +30,8 @@ uint8_t umh_tx_ready_flag = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer);
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length);
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length, uint8_t *tx_buffer, uint32_t *tx_length)
+{
 UART_MSG_HANDLER_eReturnCode umh_swap_rx_buffer();
 
 /* Exported functions --------------------------------------------------------*/
@@ -287,28 +288,29 @@ UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
  *      - 7D -> 7D 5D
  * @param buffer buffer to encode
  * @param length input buffer length (in bytes) will be modified to the length of the encoded message
+ * @param tx_buffer buffer to store the encoded message
+ * @param tx_length length of the encoded message
  * @return UART_MSG_HANDLER_eReturnCode 
  */
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length)
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length, uint8_t *tx_buffer, uint32_t *tx_length)
 {
     uint8_t *ptr = buffer;
-    uint8_t *tx_ptr = umh_tx_ptr;
+    uint8_t *tx_ptr = tx_buffer;
     uint8_t checksum = 0;
-    uint32_t length_orginal = *length;
     // Check if the buffer is empty
-    if (length_orginal == 0)
+    if (*length == 0)
     {
         return UMH_PARAMETER_ERROR;
     }
     // Check if the buffer is too large
-    if (length_orginal > UMH_MAX_DATA_SIZE)
+    if (*length > UMH_MAX_DATA_SIZE)
     {
         return UMH_BUFFER_ERROR;
     }
     // Add the start byte
     *tx_ptr++ = 0x7E;
     // Calculate the checksum
-    for (uint32_t i = 0; i < length_orginal; i++)
+    for (uint32_t i = 0; i < *length; i++)
     {
         checksum += *ptr;
         // Check for escape characters
@@ -333,7 +335,7 @@ UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length)
     // Add the end byte
     *tx_ptr++ = 0x7E;
     // Set the length of the message
-    *length = tx_ptr - umh_tx_ptr;
+    *tx_length = tx_ptr - umh_tx_ptr;
     return UMH_RET_OK;
 }
 
