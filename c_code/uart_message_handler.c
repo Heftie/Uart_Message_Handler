@@ -30,7 +30,7 @@ uint8_t umh_tx_ready_flag = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer);
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length, uint8_t *tx_buffer, uint32_t *tx_length)
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length, uint8_t *tx_buffer, uint32_t *tx_length)
 {
 UART_MSG_HANDLER_eReturnCode umh_swap_rx_buffer();
 
@@ -191,14 +191,21 @@ void umh_ISR(uint16_t size)
  */
 UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
 {
-    uint32_t transmit_length = length;
+    UART_MSG_HANDLER_eReturnCode ret = UMH_RET_OK;
+    uint32_t transmit_length = 0;
     // check for size
     if (length > UMH_MAX_DATA_SIZE)
     {
         return UMH_PARAMETER_ERROR;
     }
     // parse message
-    umh_encode_msg(buffer, &transmit_length);
+    ret = umh_encode_msg(buffer, length, umh_tx_ptr, &transmit_length);
+    
+    if (ret != UMH_RET_OK)
+    {
+        return ret;
+    }
+    // Call Transmit function here with umh_tx_ptr / umh_tx_buffer and transmit_length
 
     // Transmit the data
     return UMH_RET_OK;
@@ -292,25 +299,25 @@ UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
  * @param tx_length length of the encoded message
  * @return UART_MSG_HANDLER_eReturnCode 
  */
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length, uint8_t *tx_buffer, uint32_t *tx_length)
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length, uint8_t *tx_buffer, uint32_t *tx_length)
 {
     uint8_t *ptr = buffer;
     uint8_t *tx_ptr = tx_buffer;
     uint8_t checksum = 0;
     // Check if the buffer is empty
-    if (*length == 0)
+    if (length == 0)
     {
         return UMH_PARAMETER_ERROR;
     }
     // Check if the buffer is too large
-    if (*length > UMH_MAX_DATA_SIZE)
+    if (length > UMH_MAX_DATA_SIZE)
     {
         return UMH_BUFFER_ERROR;
     }
     // Add the start byte
     *tx_ptr++ = 0x7E;
     // Calculate the checksum
-    for (uint32_t i = 0; i < *length; i++)
+    for (uint32_t i = 0; i < length; i++)
     {
         checksum += *ptr;
         // Check for escape characters
