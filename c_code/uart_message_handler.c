@@ -31,7 +31,7 @@ extern UART_HandleTypeDef huart2;
 
 /* Private function prototypes -----------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer);
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length);
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length);
 UART_MSG_HANDLER_eReturnCode umh_swap_rx_buffer();
 
 /* Exported functions --------------------------------------------------------*/
@@ -128,6 +128,7 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer(uint8_t *buffer, uint32_t length)
  */
 UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t length)
 {
+    uint8_t sortBuffer[UMH_MAX_DATA_SIZE];
     // check if the length is too large
     if (length > UMH_MAX_DATA_SIZE / 2)
     {
@@ -136,10 +137,10 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t leng
     // align data msb first
     for (uint32_t i = 0; i < length; i++)
     {
-        umh_tx_buffer[i * 2] = (buffer[i] >> 8) & 0xFF;
-        umh_tx_buffer[i * 2 + 1] = buffer[i] & 0xFF;
+        sortBuffer[i * 2] = (buffer[i] >> 8) & 0xFF;
+        sortBuffer[i * 2 + 1] = buffer[i] & 0xFF;
     }
-    umh_transmit_data(umh_tx_buffer, length * 2);
+    umh_transmit_data(sortBuffer, length * 2);
     return UMH_RET_OK;
 }
 
@@ -152,6 +153,7 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t leng
  */
 UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t length)
 {
+    uint8_t sortBuffer[UMH_MAX_DATA_SIZE];
     // check if the length is too large
     if (length > UMH_MAX_DATA_SIZE / 4)
     {
@@ -160,12 +162,12 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t leng
     // align data msb first
     for (uint32_t i = 0; i < length; i++)
     {
-        umh_tx_buffer[i * 2]     = (buffer[i] >> 24) & 0xFF;
-        umh_tx_buffer[i * 2 + 1] = (buffer[i] >> 16) & 0xFF;
-        umh_tx_buffer[i * 2 + 2] = (buffer[i] >> 8)  & 0xFF;
-        umh_tx_buffer[i * 2 + 3] = buffer[i] & 0xFF;
+        sortBuffer[i * 4]     = (buffer[i] >> 24) & 0xFF;
+        sortBuffer[i * 4 + 1] = (buffer[i] >> 16) & 0xFF;
+        sortBuffer[i * 4 + 2] = (buffer[i] >> 8)  & 0xFF;
+        sortBuffer[i * 4 + 3] = buffer[i] & 0xFF;
     }
-    umh_transmit_data(umh_tx_buffer, length * 4);
+    umh_transmit_data(sortBuffer, length * 4);
     return UMH_RET_OK;
 }    
 
@@ -196,6 +198,15 @@ void umh_ISR(uint16_t size)
  */
 UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
 {
+    uint32_t transmit_length = length;
+    // check for size
+    if (length > UMH_MAX_DATA_SIZE)
+    {
+        return UMH_PARAMETER_ERROR;
+    }
+    // parse message
+    umh_encode_msg(buffer, &transmit_length);
+
     // Transmit the data
 	if (HAL_OK != HAL_UART_Transmit_DMA(&huart2, buffer, length)){
 		return UMH_REQUEST_ERROR;
@@ -216,7 +227,6 @@ UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
  *      - 7D 5D -> 7D
  * 
  * @param buffer 
- * @param length 
  * @return UART_MSG_HANDLER_eReturnCode 
  */
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
@@ -286,29 +296,30 @@ UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
  *      The message is escaped as follows:
  *      - 7E -> 7D 5E
  *      - 7D -> 7D 5D
- * @param buffer 
- * @param length 
+ * @param buffer buffer to encode
+ * @param length input buffer length (in bytes) will be modified to the length of the encoded message
  * @return UART_MSG_HANDLER_eReturnCode 
  */
-UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length)
+UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t *length)
 {
     uint8_t *ptr = buffer;
     uint8_t *tx_ptr = umh_tx_ptr;
     uint8_t checksum = 0;
+    uint32_t length_orginal = *length;
     // Check if the buffer is empty
-    if (length == 0)
+    if (length_orginal == 0)
     {
         return UMH_PARAMETER_ERROR;
     }
     // Check if the buffer is too large
-    if (length > UMH_MAX_DATA_SIZE)
+    if (length_orginal > UMH_MAX_DATA_SIZE)
     {
         return UMH_BUFFER_ERROR;
     }
     // Add the start byte
     *tx_ptr++ = 0x7E;
     // Calculate the checksum
-    for (uint32_t i = 0; i < length; i++)
+    for (uint32_t i = 0; i < length_orginal; i++)
     {
         checksum += *ptr;
         // Check for escape characters
@@ -332,6 +343,8 @@ UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length)
     *tx_ptr++ = checksum;
     // Add the end byte
     *tx_ptr++ = 0x7E;
+    // Set the length of the message
+    *length = tx_ptr - umh_tx_ptr;
     return UMH_RET_OK;
 }
 
