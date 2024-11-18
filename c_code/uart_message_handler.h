@@ -13,6 +13,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "string.h"
+#include "main.h"
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum

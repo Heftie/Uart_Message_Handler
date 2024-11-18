@@ -27,6 +27,7 @@ uint32_t umh_rx_size = 0;
 uint8_t umh_rx_received_flag = 0;
 uint8_t umh_tx_ready_flag = 0;
 /* External variables --------------------------------------------------------*/
+extern UART_HandleTypeDef huart2;
 
 /* Private function prototypes -----------------------------------------------*/
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer);
@@ -53,6 +54,11 @@ UART_MSG_HANDLER_eReturnCode umh_init()
     // reset the flags
     umh_rx_received_flag = 0;
     umh_tx_ready_flag = 0;
+    // First start of receive
+    if (HAL_OK != HAL_UARTEx_ReceiveToIdle_DMA(&huart2, umh_rx_receive_ptr, UMH_RX_BUFFER_SIZE)){
+    	return UMH_REQUEST_ERROR;
+    }
+
     return UMH_RET_OK;
 }
 
@@ -175,6 +181,8 @@ void umh_ISR(uint16_t size)
     umh_swap_rx_buffer();
     // set receive flag
     umh_rx_received_flag = 1;
+    // restart HAL RX
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart2, umh_rx_receive_ptr, UMH_RX_BUFFER_SIZE);
 }
 
 /* Private functions ---------------------------------------------------------*/
@@ -189,6 +197,9 @@ void umh_ISR(uint16_t size)
 UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
 {
     // Transmit the data
+	if (HAL_OK != HAL_UART_Transmit_DMA(&huart2, buffer, length)){
+		return UMH_REQUEST_ERROR;
+	}
     return UMH_RET_OK;
 }
 
