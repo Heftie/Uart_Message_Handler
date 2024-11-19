@@ -3,6 +3,15 @@
   * @file    uart_message_handler.h
   * @author  Jonas Sigmund
   * @brief   Uart Message Handler
+  *          The handler will communicate with the following message format.
+  *          
+  *          0x7E <command> <data> <chk> 0x7E
+  *          The command is a single byte
+  *          The data is a variable length
+  *          The chk is a single byte (checksum over the command and data)
+  * 
+  *          For implementation adopt umh_transmit_data() and excecute the 
+  *          umh_ISR() in your interrupt callback UART RX Completed
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/

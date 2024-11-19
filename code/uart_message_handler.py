@@ -15,7 +15,7 @@ import serial
 #      0x7E <response_cmd> <response code> <chk> 0x7E
 #      The response_cmd is 0xF0
 #      The response code is a single byte
-#        0x00: Success
+#        0x00: OK
 #        0x01: Request Error
 #        0x02: Channel Error
 #        0x03: Parameter Error
