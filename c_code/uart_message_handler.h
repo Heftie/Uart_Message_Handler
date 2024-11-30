@@ -1,19 +1,19 @@
 /**
-  ******************************************************************************
-  * @file    uart_message_handler.h
-  * @author  Jonas Sigmund
-  * @brief   Uart Message Handler
-  *          The handler will communicate with the following message format.
-  *          
-  *          0x7E <command> <data> <chk> 0x7E
-  *          The command is a single byte
-  *          The data is a variable length
-  *          The chk is a single byte (checksum over the command and data)
-  * 
-  *          For implementation adopt umh_transmit_data() and excecute the 
-  *          umh_ISR() in your interrupt callback UART RX Completed
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    uart_message_handler.h
+ * @author  Jonas Sigmund
+ * @brief   Uart Message Handler
+ *          The handler will communicate with the following message format.
+ *
+ *          0x7E <command> <data> <chk> 0x7E
+ *          The command is a single byte
+ *          The data is a variable length
+ *          The chk is a single byte (checksum over the command and data)
+ *
+ *          For implementation adopt umh_transmit_data() and excecute the
+ *          umh_ISR() in your interrupt callback UART RX Completed
+ ******************************************************************************
+ */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef UART_MSG_HANDLER_H
 #define UART_MSG_HANDLER_H
@@ -26,24 +26,23 @@
 /* Exported types ------------------------------------------------------------*/
 typedef enum
 {
-    UMH_RET_OK               = 0,    /**< Function call was accepted */
-    UMH_REQUEST_ERROR        = 1,    /**< Function call cannot be honored */
-    UMH_CHANNEL_ERROR        = 2,    /**< Invalid sequencer argument */
-    UMH_PARAMETER_ERROR      = 3,    /**< Arguments are invalid */
-    UMH_BUFFER_ERROR         = 4,    /**< Buffer Size is not sufficent */
-    UMH_DELAYED              = 5,    /**< Request accepted but delayed */
-    UMH_DATA_INVALID         = 6,    /**< Data area not valid */
-    UMH_DATA_ERROR           = 7,    /**< Data area not valid */
-    UMH_CHKSUM_ERROR         = 8,    /**< Checksum error */
-    UMH_INITVAL_CODE         = 0xFF  /**< UCOM Module internal use only */
+    UMH_RET_OK = 0,          /**< Function call was accepted */
+    UMH_REQUEST_ERROR = 1,   /**< Function call cannot be honored */
+    UMH_CHANNEL_ERROR = 2,   /**< Invalid sequencer argument */
+    UMH_PARAMETER_ERROR = 3, /**< Arguments are invalid */
+    UMH_BUFFER_ERROR = 4,    /**< Buffer Size is not sufficent */
+    UMH_DELAYED = 5,         /**< Request accepted but delayed */
+    UMH_DATA_INVALID = 6,    /**< Data area not valid */
+    UMH_DATA_ERROR = 7,      /**< Data area not valid */
+    UMH_CHKSUM_ERROR = 8,    /**< Checksum error */
+    UMH_INITVAL_CODE = 0xFF  /**< UCOM Module internal use only */
 } UART_MSG_HANDLER_eReturnCode;
 
 /* Exported constants --------------------------------------------------------*/
-#define UMH_RX_BUFFER_SIZE  (256)
-#define UMH_TX_BUFFER_SIZE  (256)
-#define UMH_FRAME_SIZE      (3) // Start byte, data, checksum
-#define UMH_MAX_DATA_SIZE   ((UMH_TX_BUFFER_SIZE >> 1) - UMH_FRAME_SIZE) // Space for escaping data
-
+#define UMH_RX_BUFFER_SIZE (256)
+#define UMH_TX_BUFFER_SIZE (256)
+#define UMH_FRAME_SIZE (3)                                             // Start byte, data, checksum
+#define UMH_MAX_DATA_SIZE ((UMH_TX_BUFFER_SIZE >> 1) - UMH_FRAME_SIZE) // Space for escaping data
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
@@ -63,4 +62,4 @@ UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
 
 void umh_ISR(uint16_t size);
 
-#endif  /* UART_MSG_HANDLER_H */
+#endif /* UART_MSG_HANDLER_H */

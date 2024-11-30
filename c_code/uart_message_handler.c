@@ -1,12 +1,12 @@
 /**
-  ******************************************************************************
-  * @file    uart_message_handler.c
-  * @author  Jonas Sigmund
-  * @brief   Uart Message Handler
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    uart_message_handler.c
+ * @author  Jonas Sigmund
+ * @brief   Uart Message Handler
+ ******************************************************************************
+ */
 /* Includes ------------------------------------------------------------------*/
-# include "uart_message_handler.h"  
+#include "uart_message_handler.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -37,8 +37,8 @@ UART_MSG_HANDLER_eReturnCode umh_swap_rx_buffer();
 /* Exported functions --------------------------------------------------------*/
 /**
  * @brief Initialize the UART Message Handler
- * 
- * @return UART_MSG_HANDLER_eReturnCode 
+ *
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_init()
 {
@@ -59,9 +59,9 @@ UART_MSG_HANDLER_eReturnCode umh_init()
 
 /**
  * @brief Get the current read pointer
- * 
+ *
  * @param ptr - Pointer to hold the adresse of the current read pointer
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_get_rx_ptr(uint8_t **ptr)
 {
@@ -71,10 +71,10 @@ UART_MSG_HANDLER_eReturnCode umh_get_rx_ptr(uint8_t **ptr)
 
 /**
  * @brief Copy the data from the read buffer to a given buffer
- * 
+ *
  * @param buffer - Pointer to the buffer to copy to
  * @param length - Length of the data to copy (in bytes, max UMH_RX_BUFFER_SIZE)
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_get_rx_buffer(uint8_t *buffer, uint32_t length)
 {
@@ -88,8 +88,8 @@ UART_MSG_HANDLER_eReturnCode umh_get_rx_buffer(uint8_t *buffer, uint32_t length)
 
 /**
  * @brief Clear the read buffer
- * 
- * @return UART_MSG_HANDLER_eReturnCode 
+ *
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_clear_rx_read_buffer()
 {
@@ -99,10 +99,10 @@ UART_MSG_HANDLER_eReturnCode umh_clear_rx_read_buffer()
 
 /**
  * @brief Send a buffer of uint8_t data over the UART
- * 
+ *
  * @param buffer - Pointer to the buffer to copy from
  * @param length - Length of the data to copy (in bytes, max UMH_MAX_DATA_SIZE)
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_send_buffer(uint8_t *buffer, uint32_t length)
 {
@@ -116,10 +116,10 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer(uint8_t *buffer, uint32_t length)
 
 /**
  * @brief Send a buffer of uint16_t data with MSB first alignment
- * 
+ *
  * @param buffer - Pointer to the buffer to send
  * @param length - Length of the data to send (in words, max UMH_MAX_DATA_SIZE / 2)
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t length)
 {
@@ -141,10 +141,10 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u16(uint16_t *buffer, uint32_t leng
 
 /**
  * @brief Send a buffer of uint32_t data with MSB first alignment
- * 
+ *
  * @param buffer - Pointer to the buffer to send
  * @param length - Length of the data to send (in longs, max UMH_MAX_DATA_SIZE / 4)
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t length)
 {
@@ -157,18 +157,18 @@ UART_MSG_HANDLER_eReturnCode umh_send_buffer_u32(uint32_t *buffer, uint32_t leng
     // align data msb first
     for (uint32_t i = 0; i < length; i++)
     {
-        sortBuffer[i * 4]     = (buffer[i] >> 24) & 0xFF;
+        sortBuffer[i * 4] = (buffer[i] >> 24) & 0xFF;
         sortBuffer[i * 4 + 1] = (buffer[i] >> 16) & 0xFF;
-        sortBuffer[i * 4 + 2] = (buffer[i] >> 8)  & 0xFF;
+        sortBuffer[i * 4 + 2] = (buffer[i] >> 8) & 0xFF;
         sortBuffer[i * 4 + 3] = buffer[i] & 0xFF;
     }
     umh_transmit_data(sortBuffer, length * 4);
     return UMH_RET_OK;
-}    
+}
 
 /**
  * @brief ISR function to be called when the UART received a complete message
- * 
+ *
  * @param size - Size of the received message
  */
 void umh_ISR(uint16_t size)
@@ -184,10 +184,10 @@ void umh_ISR(uint16_t size)
 
 /**
  * @brief Dummy function to transmit data. This needs to be adjusted to the actual hardware
- * 
+ *
  * @param buffer - Pointer to the buffer to transmit
  * @param length - Length of the data to transmit (in bytes)
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
 {
@@ -200,7 +200,7 @@ UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
     }
     // parse message
     ret = umh_encode_msg(buffer, length, umh_tx_ptr, &transmit_length);
-    
+
     if (ret != UMH_RET_OK)
     {
         return ret;
@@ -222,9 +222,9 @@ UART_MSG_HANDLER_eReturnCode umh_transmit_data(uint8_t *buffer, uint32_t length)
  *      The message is escaped as follows:
  *      - 7D 5E -> 7E
  *      - 7D 5D -> 7D
- * 
- * @param buffer 
- * @return UART_MSG_HANDLER_eReturnCode 
+ *
+ * @param buffer
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
 {
@@ -246,14 +246,18 @@ UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
             {
                 *write_ptr = 0x7D;
             }
-        } else {
+        }
+        else
+        {
             *write_ptr = *read_ptr;
         }
         // Check for start and end byte
         if (*read_ptr == 0x7E)
         {
             sofeof_cnt++;
-        } else {
+        }
+        else
+        {
             checksum += *read_ptr;
         }
         // Check for end of message and break
@@ -297,7 +301,7 @@ UART_MSG_HANDLER_eReturnCode umh_decode_msg(uint8_t *input_buffer)
  * @param length input buffer length (in bytes) will be modified to the length of the encoded message
  * @param tx_buffer buffer to store the encoded message
  * @param tx_length length of the encoded message
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length, uint8_t *tx_buffer, uint32_t *tx_length)
 {
@@ -348,8 +352,8 @@ UART_MSG_HANDLER_eReturnCode umh_encode_msg(uint8_t *buffer, uint32_t length, ui
 
 /**
  * @brief Swap the receive buffers
- * 
- * @return UART_MSG_HANDLER_eReturnCode 
+ *
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode umh_swap_rx_buffer()
 {

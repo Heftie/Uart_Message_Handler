@@ -1,12 +1,12 @@
 /**
-  ******************************************************************************
-  * @file    uart_user_messager.c
-  * @author  Jonas Sigmund
-  * @brief   Uart User messager
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    uart_user_messager.c
+ * @author  Jonas Sigmund
+ * @brief   Uart User messager
+ ******************************************************************************
+ */
 /* Includes ------------------------------------------------------------------*/
-# include "uart_user_messager.h"  
+#include "uart_user_messager.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -19,46 +19,48 @@
 /* Exported functions --------------------------------------------------------*/
 /**
  * @brief Initialize the user messager
- * 
- * @return UART_MSG_HANDLER_eReturnCode 
+ *
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode ucm_init()
 {
-
+    return UMH_RET_OK;
 }
 
 /**
- * @brief 
- * 
- * @return UART_MSG_HANDLER_eReturnCode 
+ * @brief
+ *
+ * @return UART_MSG_HANDLER_eReturnCode
  */
 UART_MSG_HANDLER_eReturnCode ucm_user_messager()
 {
-  UART_MSG_HANDLER_eReturnCode ret = UMH_RET_OK;
-  UART_MSG_CMD_t command = UMC_MSG_ERROR;
-  uint8_t * ptr;
-  // Check if a message has been received
-  if(umh_rx_received_flag == 0){
-    return UMH_RET_OK;
-  }
-  
-  // get the received buffer
-  umh_get_rx_ptr(ptr);
-  ret = umh_decode_msg(ptr); // buffer will decoded and checked
-  if (ret != UMH_RET_OK)
-  {
-    return ret;
-  }
+    UART_MSG_HANDLER_eReturnCode ret = UMH_RET_OK;
+    UART_MSG_CMD_t command = UMC_CMD_RESPONSE;
+    uint8_t *ptr;
+    // Check if a message has been received
+    if (umh_rx_received_flag == 0)
+    {
+        return UMH_RET_OK;
+    }
 
-  // Get the command
-  command = umh_rx_buffer[UCM_POS_CMD];
+    // get the received buffer
+    umh_get_rx_ptr(ptr);
+    ret = umh_decode_msg(ptr); // buffer will decoded and checked
+    if (ret != UMH_RET_OK)
+    {
+        return ret;
+    }
 
-  switch (command)
-  { 
+    // Get the command
+    command = umh_rx_buffer[UCM_POS_CMD];
+
+    switch (command)
+    {
     default:
         break;
-  }
+    }
 
+    return UMH_RET_OK;
 }
 
 /* Private functions ---------------------------------------------------------*/
